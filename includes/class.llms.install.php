@@ -382,7 +382,7 @@ CREATE TABLE `{$wpdb->prefix}lifterlms_vouchers_codes` (
 			if ( version_compare( $db_version, max( array_keys( self::$db_updates ) ), '<' ) ) {
 
 				// may not be available since this runs on init
-				include_once LLMS_PLUGIN_DIR . 'includes/admin/class.llms.admin.notices.php';
+				include_once 'includes/admin/class.llms.admin.notices.php';
 
 				// if a notice already exists clear it out and add the most current one
 				if ( LLMS_Admin_Notices::has_notice( 'db-update' ) ) {
