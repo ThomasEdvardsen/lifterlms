@@ -82,14 +82,15 @@ class LLMS_Meta_Box_Course_Options extends LLMS_Admin_Metabox {
 						'group' 	=> 'top',
 					),
 					array(
-						'type'		=> 'select',
-						'label'		=> __( 'Course Difficulty Category', 'lifterlms' ),
-						'desc' 		=> 'Choose a course difficulty level from the difficulty categories.',
+						'class' 	=> 'llms-select2',
 						'id' 		=> $this->prefix . 'post_course_difficulty',
-						'class' 	=> 'llms-select-2',
-						'value' 	=> $difficulty_options,
+						'desc' 		=> sprintf( __( 'Choose a course difficulty level. New difficulties can be added via %1$sCourses -> Difficulties%2$s.', 'lifterlms' ), '<a href="' . admin_url( 'edit-tags.php?taxonomy=course_difficulty&post_type=course' ) . '">', '</a>' ),
 						'desc_class' => 'd-all',
 						'group' 	=> 'bottom',
+						'label'		=> __( 'Course Difficulty Category', 'lifterlms' ),
+						'selected'  => $course->get_difficulty( 'slug' ),
+						'type'		=> 'select',
+						'value' 	=> $difficulty_options,
 					),
 					array(
 						'type'		=> 'text',
@@ -97,6 +98,14 @@ class LLMS_Meta_Box_Course_Options extends LLMS_Admin_Metabox {
 						'desc' 		=> sprintf( __( 'Paste the url for a Wistia, Vimeo or Youtube video or a hosted video file. For a full list of supported providers see %s.', 'lifterlms' ), '<a href="https://codex.wordpress.org/Embeds#Okay.2C_So_What_Sites_Can_I_Embed_From.3F" target="_blank">WordPress oEmbeds</a>' ),
 						'id' 		=> $this->prefix . 'video_embed',
 						'class' 	=> 'code input-full',
+					),
+					array(
+						'desc' 		    => __( 'When enabled, the featured video will be displayed on the course tile in addition to the course page.', 'lifterlms' ),
+						'desc_class'    => 'd-3of4 t-3of4 m-1of2',
+						'id'            => $this->prefix . 'tile_featured_video',
+						'label'		    => __( 'Display Featured Video on Course Tile', 'lifterlms' ),
+						'type'		    => 'checkbox',
+						'value' 	    => 'yes',
 					),
 					array(
 						'type'		=> 'text',
@@ -297,9 +306,9 @@ class LLMS_Meta_Box_Course_Options extends LLMS_Admin_Metabox {
 	 * @param    int     $post_id  WP Post ID of the course
 	 * @return   void
 	 * @since    3.0.0
-	 * @version  3.0.0
+	 * @version  3.0.4 - changed from after save to before save
 	 */
-	protected function save_after( $post_id ) {
+	protected function save_before( $post_id ) {
 
 		if ( ! isset( $_POST['_llms_post_course_difficulty'] ) ) {
 			$difficulty = '';
@@ -308,6 +317,8 @@ class LLMS_Meta_Box_Course_Options extends LLMS_Admin_Metabox {
 		}
 
 		wp_set_object_terms( $post_id, $difficulty, 'course_difficulty', false );
+
+		unset( $_POST['_llms_post_course_difficulty'] ); // don't save this to the postmeta table
 
 	}
 

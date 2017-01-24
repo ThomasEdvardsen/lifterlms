@@ -1,22 +1,22 @@
 <?php
 /**
-* Plugin Name: LifterLMS
-* Plugin URI: https://lifterlms.com/
-* Description: LifterLMS, the #1 WordPress LMS solution, makes it easy to create, sell, and protect engaging online courses.
-* Version: 3.0.2
-* Author: Thomas Patrick Levy, codeBOX LLC, Mark Nelson
-* Author URI: http://gocodebox.com
-* Text Domain: lifterlms
-* Domain Path: /languages
-* License:     GPLv2
-* License URI: https://www.gnu.org/licenses/gpl-2.0.html
-* Requires at least: 4.0
-* Tested up to: 4.6.1
-*
-* @package 		LifterLMS
-* @category 	Core
-* @author 		codeBOX
-*/
+ * Plugin Name: LifterLMS
+ * Plugin URI: https://lifterlms.com/
+ * Description: LifterLMS, the #1 WordPress LMS solution, makes it easy to create, sell, and protect engaging online courses.
+ * Version: 3.3.0
+ * Author: Thomas Patrick Levy, codeBOX LLC
+ * Author URI: http://gocodebox.com
+ * Text Domain: lifterlms
+ * Domain Path: /languages
+ * License: GPLv2
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Requires at least: 4.0
+ * Tested up to: 4.7.1
+ *
+ * @package     LifterLMS
+ * @category 	Core
+ * @author 		codeBOX
+ */
 
 /**
  * Restrict direct access
@@ -35,7 +35,7 @@ require_once 'vendor/autoload.php';
  */
 final class LifterLMS {
 
-	public $version = '3.0.2';
+	public $version = '3.3.0';
 
 	protected static $_instance = null;
 
@@ -92,14 +92,6 @@ final class LifterLMS {
 		add_action( 'init', array( $this, 'include_template_functions' ) );
 		add_action( 'init', array( 'LLMS_Shortcodes', 'init' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'add_action_links' ), 10, 1 );
-
-		// quick and dirty update note for 3.0 release
-		add_action( 'in_plugin_update_message-lifterlms/lifterlms.php', function( $data ) {
-
-			echo '<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>' . sprintf( __( '3.0 is a major update. It is important that you make backups and ensure themes and extensions are 3.0 compatible before upgrading. %sRead more here%s.', 'lifterlms' ), '<a href=" https://lifterlms.com/docs/upgrading-to-lifterlms-3-0/" target="_blank">', '</a>' ) . '</strong>';
-			echo "<script>jQuery( '#lifterlms-update .update-message' ).removeClass( 'notice-warning' ).addClass( 'notice-error' );</script>";
-
-		} );
 
 		// tracking
 		if ( defined( 'DOING_CRON' ) && DOING_CRON && 'yes' === get_option( 'llms_allow_tracking', 'no' ) ) {
@@ -192,6 +184,9 @@ final class LifterLMS {
 
 		if ( is_admin() ) {
 
+			include_once 'includes/class.llms.generator.php';
+			include_once 'includes/admin/class.llms.admin.import.php';
+
 			require_once 'includes/admin/llms.functions.admin.php';
 			include_once 'includes/admin/class.llms.admin.menus.php';
 			include_once 'includes/admin/class.llms.admin.notices.php';
@@ -203,7 +198,7 @@ final class LifterLMS {
 				require_once 'includes/admin/class.llms.admin.setup.wizard.php';
 			}
 
-			include_once( 'includes/admin/analytics/widgets/class.llms.analytics.widget.ajax.php' );
+			include_once( 'includes/admin/reporting/widgets/class.llms.analytics.widget.ajax.php' );
 			include_once( 'includes/admin/post-types/meta-boxes/fields/llms.class.meta.box.fields.php' );
 			include_once( 'includes/admin/post-types/meta-boxes/fields/llms.interface.meta.box.field.php' );
 			include_once( 'includes/class.llms.analytics.php' );
@@ -248,10 +243,8 @@ final class LifterLMS {
 
 		// Classes
 		include_once( 'includes/class.llms.student.php' );
-		include_once( 'includes/class.llms.section.php' );
 		include_once( 'includes/class.llms.lesson.handler.php' );
 		include_once( 'includes/class.llms.quiz.php' );
-		include_once( 'includes/class.llms.question.php' );
 		include_once( 'includes/class.llms.course.factory.php' );
 		include_once( 'includes/class.llms.review.php' );
 		include_once( 'includes/class.llms.student.dashboard.php' );
@@ -291,6 +284,8 @@ final class LifterLMS {
 			include_once( 'includes/shortcodes/class.llms.shortcode.checkout.php' );
 
 		}
+
+		require_once 'includes/class.llms.playnice.php';
 
 	}
 
@@ -344,7 +339,7 @@ final class LifterLMS {
 	 * @return string
 	 */
 	public function template_path() {
-		return apply_filters( 'LLMS_TEMPLATE_PATH', 'lifterlms/' );
+		return apply_filters( 'llms_template_path', 'lifterlms/' );
 	}
 
 	/**

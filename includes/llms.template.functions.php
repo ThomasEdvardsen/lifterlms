@@ -28,7 +28,7 @@ if ( ! function_exists( 'llms_agree_to_terms_form_field' ) ) {
 				'description' => '',
 				'default' => 'no',
 				'id' => 'llms_agree_to_terms',
-				'label' => wp_kses( sprintf( _x( 'I have read and agree to the <a href="%s" target="_blank">%s</a>.', 'terms and conditions checkbox', 'lifterlms' ), get_the_permalink( $page_id ), get_the_title( $page_id ) ), array(
+				'label' => wp_kses( sprintf( _x( 'I have read and agree to the <a href="%1$s" target="_blank">%2$s</a>.', 'terms and conditions checkbox', 'lifterlms' ), get_the_permalink( $page_id ), get_the_title( $page_id ) ), array(
 					'a' => array(
 						'href' => array(),
 						'target' => array(),
@@ -133,8 +133,7 @@ if ( ! function_exists( 'llms_get_post_content' ) ) {
 			case 'llms_membership':
 				if ( $page_restricted['is_restricted'] ) {
 					add_filter( 'the_excerpt', array( $GLOBALS['wp_embed'], 'autoembed' ), 9 );
-
-					if ($post->post_excerpt) {
+					if ( $post->post_excerpt ) {
 						$content = llms_get_excerpt( $post->ID );
 					}
 				}
@@ -890,7 +889,7 @@ function llms_setup_lesson_data( $post ) {
 			if ( empty( $post->post_type ) ) {
 				return; }
 
-			$courseid = get_post_meta( $post->ID, '_parent_course' );
+			$courseid = get_post_meta( $post->ID, '_llms_parent_course' );
 
 			if ( isset( $courseid ) ) {
 				$parent_course = get_post( $courseid );
@@ -1106,18 +1105,18 @@ if ( ! function_exists( 'lifterlms_course_progress_bar' ) ) {
 	function lifterlms_course_progress_bar( $progress, $link = false, $button = true, $echo = true ) {
 
 		$tag = ($link) ? 'a' : 'span';
-		$href = ($link) ? ' href=" ' .$link. ' "' : '';
+		$href = ($link) ? ' href=" ' . $link . ' "' : '';
 
 		$r = '
 			<div class="llms-progress">
-				<div class="progress__indicator">' . sprintf( __( '%s%%', 'lifterlms' ), $progress ) . '</div>
+				<div class="progress__indicator">' . sprintf( __( '%s', 'lifterlms' ), $progress ) . '%</div>
 					<div class="llms-progress-bar">
 					<div class="progress-bar-complete" style="width:' . $progress . '%"></div>
 				</div>
 			</div>';
 
 		if ($button) {
-			$r .= '<' . $tag . ' class="llms-button-primary llms-purchase-button"'. $href .'>' . sprintf( __( 'Continue (%s%%)', 'lifterlms' ), $progress ) . '</' . $tag . '>';
+			$r .= '<' . $tag . ' class="llms-button-primary llms-purchase-button"' . $href . '>' . __( 'Continue', 'lifterlms' ) . '(' . $progress . '%)</' . $tag . '>';
 		}
 
 		if ( $echo ) {
@@ -1387,6 +1386,25 @@ function llms_featured_img( $post_id, $size ) {
 	return apply_filters( 'lifterlms_featured_img', '<img src="' . $img[0] . '" alt="' . get_the_title( $post_id ) . '" class="llms-featured-image wp-post-image">' );
 }
 
+/**
+ * Output a featured video on the course tile in a LifterLMS Loop
+ * @return   void
+ * @since    3.3.0
+ * @version  3.3.0
+ */
+function lifterlms_loop_featured_video() {
+	global $post;
+	if ( 'course' === $post->post_type ) {
+		$course = llms_get_post( $post );
+		if ( 'yes' === $course->get( 'tile_featured_video' ) ) {
+			$video = $course->get_video();
+			if ( $video ) {
+				echo $video;
+			}
+		}
+	}
+}
+
 
 /**
  * Retrieve author name, avatar, and bio
@@ -1642,25 +1660,6 @@ function llms_get_excerpt( $post_id ) {
 }
 
 /**
- * Set Course and Membership to order by order instead of title
- * @param  [obj] $vars [query object]
- * @return [object]       [query object]
- */
-function llms_custom_archive_order( $vars ) {
-	if ( ! is_admin() && isset( $vars['post_type'] ) ) {
-
-		if ( $vars['post_type'] === 'course' || $vars['post_type'] === 'membership' ) {
-			$vars['orderby'] = 'menu_order';
-			$vars['order'] = 'ASC';
-		}
-
-	}
-
-	return $vars;
-}
-add_filter( 'request', 'llms_custom_archive_order' );
-
-/**
  * Shuffles an array while keeping the array indices
  *
  * @param array $array
@@ -1851,5 +1850,14 @@ if ( ! function_exists( 'lifterlms_template_student_dashboard_wrapper_close' ) )
 	}
 endif;
 
-
-
+/**
+ * Output course reviews
+ * @return   void
+ * @since    3.1.3
+ * @version  3.1.3
+ */
+if ( ! function_exists( 'lifterlms_template_single_reviews' ) ) {
+	function lifterlms_template_single_reviews() {
+		LLMS_Reviews::output();
+	}
+}

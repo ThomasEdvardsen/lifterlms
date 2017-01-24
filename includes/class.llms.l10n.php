@@ -48,9 +48,10 @@ class LLMS_l10n {
 			/**
 			 * file: _private/js/llms-metaboxes.js
 			 * @since    3.0.0
-			 * @version  3.0.0
+			 * @version  3.1.0
 			 */
 			'Cancel' => __( 'Cancel', 'lifterlms' ),
+			'Copy this code and paste it into the desired area' => __( 'Copy this code and paste it into the desired area', 'lifterlms' ),
 			'Record a Manual Payment' => __( 'Record a Manual Payment', 'lifterlms' ),
 			'Refund' => __( 'Refund', 'lifterlms' ),
 
@@ -74,10 +75,10 @@ class LLMS_l10n {
 
 			/**
 			 * file: _private/js/app/llms-syllabus.js
-			 * @since   3.0.0
-			 * @version 3.0.0
+			 * @since   3.2.4
+			 * @version 3.2.4
 			 */
-			'You must enroll in this course to unlock this lesson' => __( 'You must enroll in this course to unlock this lesson', 'lifterlms' ),
+			'You do not have permission to access to this content' => __( 'You do not have permission to access to this content', 'lifterlms' ),
 
 			/**
 			 * file: _private/js/app/llms-quiz.js

@@ -279,10 +279,10 @@ class LLMS_Meta_Box_Course_Outline {
 	    $html .= '<form id="llms_add_existing_lesson">';
 
 	    $html .= '<label>' . __( 'Select the lesson you would like to add.', 'lifterlms' ) . '</label>';
-	    $html .= '<select id="llms-lesson-select" name="llms_lesson" class="llms-chosen-select"></select>';
+	    $html .= '<select id="llms-lesson-select" name="llms_lesson" class="llms-select2-post" data-placeholder="' . __( 'Select a lesson.', 'lifterlms' ) . '" data-post-type="lesson"></select>';
 
 	    $html .= '<label>' . __( 'Select the section to place your lesson in', 'lifterlms' ) . '</label>';
-	    $html .= '<select id="llms-section-select" name="llms_section" class="llms-chosen-select"></select>';
+	    $html .= '<select id="llms-section-select" name="llms_section" class="llms-select2"></select><br><br>';
 
 	    $html .= '<input type="submit" class="llms-button-secondary llms-modal-cancel" value="' . __( 'Cancel', 'lifterlms' ) . '">';
 	    $html .= '<input type="submit" class="llms-button-primary" value="' . __( 'Add Lesson', 'lifterlms' ) . '">';
@@ -337,6 +337,11 @@ class LLMS_Meta_Box_Course_Outline {
 	 * @param string $post
 	 */
 	public static function output( $post ) {
+
+		if ( ! $post || 'auto-draft' === $post->post_status ) {
+			_e( 'Your course must be published or saved as a draft before you can add sections and lessons to it.', 'lifterlms' );
+			return;
+		}
 
 		$course = new LLMS_Course( $post->ID );
 		$sections = $course->get_sections( 'posts' );
@@ -589,7 +594,7 @@ class LLMS_Meta_Box_Course_Outline {
 				$lesson_order = llms_clean( $lessons_order[ $key ] );
 
 				update_post_meta( $lesson_id, '_llms_order', $lesson_order );
-				update_post_meta( $lesson_id, '_parent_section', $parent_section );
+				update_post_meta( $lesson_id, '_llms_parent_section', $parent_section );
 				update_post_meta( $lesson_id, '_llms_order', $lesson_order );
 
 			}

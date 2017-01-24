@@ -36,6 +36,35 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
  */
 class LLMS_Access_Plan extends LLMS_Post_Model {
 
+	protected $properties = array(
+		'access_expiration' => 'string',
+		'access_expires' => 'string',
+		'access_length' => 'absint',
+		'access_period' => 'string',
+		'availability' => 'string',
+		'availability_restrictions' => 'array',
+		'content' => 'string',
+		'enroll_text' => 'string',
+		'featured' => 'yesno',
+		'frequency' => 'absint',
+		'is_free' => 'yesno',
+		'length' => 'absint',
+		'menu_order' => 'absint',
+		'on_sale' => 'yesno',
+		'period' => 'string',
+		'price' => 'float',
+		'product_id' => 'absint',
+		'sale_end' => 'string',
+		'sale_start' => 'string',
+		'sale_price' => 'float',
+		'sku' => 'string',
+		'title' => 'string',
+		'trial_length' => 'absint',
+		'trial_offer' => 'yesno',
+		'trial_period' => 'string',
+		'trial_price' => 'float',
+	);
+
 	protected $db_post_type = 'llms_access_plan';
 	protected $model_post_type = 'access_plan';
 
@@ -148,7 +177,7 @@ class LLMS_Access_Plan extends LLMS_Post_Model {
 	 * @param   string $format     optionl return format as passed to llms_price()
 	 * @return  mixed
 	 * @since   3.0.0
-	 * @version 3.0.0
+	 * @version 3.2.7
 	 */
 	public function get_price_with_coupon( $key, $coupon_id, $price_args = array(), $format = 'html' ) {
 
@@ -208,7 +237,7 @@ class LLMS_Access_Plan extends LLMS_Post_Model {
 					$price = strip_tags( $price );
 				}
 			} elseif ( 'float' === $format ) {
-				$price = floatval( number_format( $price, get_lifterlms_decimals(), get_lifterlms_decimal_separator(), get_lifterlms_thousand_separator() ) );
+				$price = floatval( number_format( $price, get_lifterlms_decimals(), get_lifterlms_decimal_separator(), '' ) );
 			} else {
 				$price = apply_filters( 'llms_get_' . $this->model_post_type . '_' . $key . '_' . $format . '_with_coupon', $price, $key, $price_args, $format, $this );
 			}
@@ -291,66 +320,13 @@ class LLMS_Access_Plan extends LLMS_Post_Model {
 
 			case 'limited-period':
 
-				$r = sprintf( _nx( '%s %s of access', '%s %ss of access', $this->get( 'access_length' ), 'Access period', 'lifterlms' ), $this->get( 'access_length' ), $this->get( 'access_period' ) );
+				$r = sprintf( _nx( '%1$s %2$s of access', '%1$s %2$ss of access', $this->get( 'access_length' ), 'Access period', 'lifterlms' ), $this->get( 'access_length' ), $this->get( 'access_period' ) );
 
 			break;
 
 		}
 
 		return apply_filters( 'llms_get_product_expiration_details', $r, $this );
-	}
-
-	/**
-	 * Get a property's data type for scrubbing
-	 * used by $this->scrub() to determine how to scrub the property
-	 * @param  string $key  property key
-	 * @return string
-	 * @since  3.0.0
-	 * @version  3.0.0
-	 */
-	protected function get_property_type( $key ) {
-
-		switch ( $key ) {
-
-			case 'access_length':
-			case 'frequency':
-			case 'length':
-			case 'product_id':
-			case 'trial_length':
-				$type = 'absint';
-			break;
-
-			case 'availability_restrictions':
-				$type = 'array';
-			break;
-
-			case 'price':
-			case 'trial_price':
-			case 'sale_price':
-				$type = 'float';
-			break;
-
-			case 'access_period':
-			case 'access_expires':
-			case 'access_expiration':
-			case 'availability':
-			case 'enroll_text':
-			case 'featured':
-			case 'is_free':
-			case 'on_sale':
-			case 'period':
-			case 'sale_end':
-			case 'sale_start':
-			case 'sku':
-			case 'trial_offer':
-			case 'trial_period':
-			default:
-				$type = 'text';
-
-		}
-
-		return $type;
-
 	}
 
 	/**
@@ -414,7 +390,7 @@ class LLMS_Access_Plan extends LLMS_Post_Model {
 
 			$length = $this->get( 'trial_length' );
 
-			$r = _nx( 'for %d %s', 'for %d %ss', $length, 'trial offer description', 'lifterlms' );
+			$r = _nx( 'for %1$d %2$s', 'for %1$d %2$ss', $length, 'trial offer description', 'lifterlms' );
 
 		}
 

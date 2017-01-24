@@ -1,10 +1,10 @@
 === LifterLMS ===
-Contributors: thomasplevy, chrisbadgett, kathy11, lifterlms, codeboxllc, therealmarknelson
+Contributors: thomasplevy, chrisbadgett, tpkemme, kathy11, lifterlms, codeboxllc
 Donate link: https://lifterlms.com
 Tags: learning management system, LMS, membership, elearning, online courses, quizzes, sell courses, badges, gamification, learning, Lifter, LifterLMS
 Requires at least: 4.0
-Tested up to: 4.6.1
-Stable tag: 3.0.2
+Tested up to: 4.7.1
+Stable tag: 3.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -165,6 +165,223 @@ Be sure you’ve taken the free tutorial training video course: [How to Create a
 15. LifterLMS Course Analytics
 
 == Changelog ==
+
+= v3.3.0 - 2017/01/23 =
+-----------------------
+
++ New course option allows displaying the video embed in place of the featured image on course tiles displayed on the course catalog screen
++ Courses can now be exported individually or in bulk. Export of a course includes all course content, sections, lessons, and quizzes.
++ Courses can now be duplicated. Duplication duplicates all course content, sections, lessons, and quizzes.
++ Upon completion of the Setup Wizard a sample course can be automatically installed.
++ Postmeta keys for Lessons and Sections which denote their relationship to their parents have been renamed for consistency, database upgrade 330 included in this release will rename the keys automatically. [Read more here](https://lifterlms.com/docs/lifterlms-database-updates/#330)
++ Update to `LLMS_Post_Model` to allow easier programmatic definition and handling of extending class properties
++ classes extending `LLMS_Post_Model` can now be serialized to json and converted to arrays programatically
++ new function `llms_get_post()` allows easier instantiation of an `LLMS_Post_Model` instance
++ Added LifterLMS Database Version to the system report
+
+
+= v3.2.7 - 2017/01/16 =
+-----------------------
+
++ Fix float conversion of large numbers with relation to coupon price adjustments
+
+
+= v3.2.6 - 2017/01/16 =
+-----------------------
+
++ Tested up to WordPress Core 4.7.1
++ Fix the display of track-related engagements on the engagement admin screen
++ Fix float conversion of large numbers with relation to prices
+
+
+= v3.2.5 - 2017/01/10 =
+-----------------------
+
++ New shortcode: `[lifterlms_pricing_table]` allows pricing table display outside of a course or membership. See [https://lifterlms.com/docs/shortcodes/#lifterlms_pricing_table](https://lifterlms.com/docs/shortcodes/#lifterlms_pricing_table) for usage information.
++ New shortcode: `[lifterlms_access_plan_button]` allows custom buttons for individual access plans to be created outside of a pricing table. See [https://lifterlms.com/docs/shortcodes/#lifterlms_access_plan_button](https://lifterlms.com/docs/shortcodes/#lifterlms_access_plan_button) for usage information.
++ ensure every return from `llms_page_restricted` is filtered. Thanks to @matthalliday
++ Ensure purchase page can only load for valid access plans
++ Course / Membership taxonomy archives now obey orders defined by their respective catalog settings
++ Fix language of automatic validation error message for numeric field types
++ Fix translation function error causing course syllabus to display incorrect "x of x" text
++ Added correct text domain to an i18n string displayed on the checkout confirmation screen, thanks @ymashev
++ Ensure search result pages are viewable by members and non members regardless of result membership restrictions (unless site is restricted to sitewide membership)
+
+
+= v3.2.4 - 2017/01/03 =
+-----------------------
+
++ Fixed tooltips on lesson preview tiles (in course syllabus and on next/prev tiles inside lessons) to show the actual reason the lesson is inaccessible rather than always showing a generic enrollment message
++ Removed the language "You must enroll in this course to unlock this lesson" in favor of "You do not have permission to access to this content" as a restriction message fallback when no better message is available
++ "Quiz Results" title is now translateable
++ Removed deprecated JS file "llms-metabox-data.js" which controlled UI/X for 2.x subscription data on courses and memberships
++ Non LMS Content (pages, posts, forums, etc...) restricted to multiple memberships will now correctly allow users access to the content as long as they have access to at least one of the memberships
++ Fixed a redirect loop encountered if direct access to a lesson with an incomplete prerequisite was attempted
+
+
+= v3.2.3 - 2016/12/29 =
+-----------------------
+
++ Progress and Grade are now sortable columns on the student reporting table
++ Make enrollment statuses translateable for courses and memberships on the Student Dashboard
++ "Sign Out" text on student dashboard is now translateable, thanks @yumashev
++ Fixed prerequisite lesson display on lesson post tables
++ Ensure post archive (blog) is visible regardless of post membership restrictions
++ Moved lesson post table managment functions to their own class
++ Unused section post table management functions removed
+
+
+= v3.2.2 - 2016/12/21 =
+-----------------------
+
++ Adds filter `llms_student_dashboard_login_redirect` allowing customization of the redirect upon login via the Student Dashboard
++ Adds a shortcode parameter, `login_redirect` to `[lifterlms_my_account]` allowing customization of the redirect upon login via the Student Dashboard
++ Adds a new tool under "Tools and Utilities" on the LifterLMS Settings screen which allows users to clear the cached student overall progress and overall grade data
++ Fixes a compatibility issue with the OptimizePress live editor
++ Adds a text domain to a translation function where none was present, rendering the string untranslateable
+
+
+= v3.2.1 - 2016/12/14 =
+-----------------------
+
++ Fix operator position on `is_complete` check
+
+
+= v3.2.0 - 2016/12/13 =
+-----------------------
+
+##### LifterLMS Reporting Beta
+
++ Students overview displays broad information about your students in a searchable and sortable table
++ Review data about individual students including:
+  + Membership enrollments and statuses
+  + Course enrollments, status, and progress
+  + Quiz attemtpts and and their submitted answers
+  + Earned achievements and certificates
++ Sales and Enrollments analytics are now found under the "Reporting" screen
++ Feedback on the beta? Let us know at [https://lifterlms.com/docs/lifterlms-reporting-beta/](https://lifterlms.com/docs/lifterlms-reporting-beta/)
+
+##### Other Updates & Fixes
+
++ Lesson completion checks now look for at least one record of the completed lesson as opposed to looking for exactly one
++ Fix positioning of teacher avatar on course/membership tiles
++ Remove explicit color definition from Student Dashboard navigation links for greater theme compatibility
+
+
+= v3.1.7 - 2016/12/06 =
+-----------------------
+
++ Added support for WordPress Twenty Seventeen theme
++ Improved the messaging and functions related to LifterLMS Sidebar support
++ Add alternate language for a quiz requiring 100% grade to pass
++ Added CSS class `.llms-button-primaray` to lessom "Mark as Complete" buttons
++ Add box-sizing css rule to LifterLMS form field elements. Fixes layout issues on themes that don't border-box everything.
++ Fix an issue that prevented the admin notice to enable/disable recurring payments from clearing when a button was pressed from screens other than the LLMS Settings screen
++ Fix next payment date error when viewing a cancelled recurring order on the student dashboard
++ Recurring payments now scheduled based on UTC time in accordance with the action scheduler which executes based on UTC rather than site timezone
++ Add existing lesson to course modal now relies on async search. Improves performance and prevents timeouts on sites with a 500+ lessons
++ Removed 2.x -> 3.x update notification message
++ Fix an issue with comment counting on PHP7
++ Updated action scheduler library to latest version
+
+
+= v3.1.6 - 2016/11/11 =
+-----------------------
+
++ Handle empty responses on analytics more responsibly
++ Fix typo preventing completed orders from displaying in analytics when using course / membership filters
++ Quiz builder now leverages llmsSelect2 rather than select2 directly. Resolves a number of theme and plugin compatiblity issues.
++ Prevent bullets and weird margins on LifterLMS notices with slightly more specific CSS
++ Login error messages will now display regardless of whether or not open registration is enabled
++ Attempts to access quizzes are redirected or error messages are output when student is not enrolled.
+
+
+= v3.1.5 - 2016/11/10 =
+-----------------------
+
++ Fix Month display on Analytics Screen
+
+
+= v3.1.4 - 2016/11/10 =
+-----------------------
+
++ Progress bars are sligthly more intelligent to prevent a widowed "%" on themes with larger base font sizes
++ LifterLMS Merge code button only displays where it's supposed to now
++ Fix issue where users removed from a membership were not properly removed from courses they were auto-enrolled into because of that membership
++ Fix analytics screen JS parsing error
+
+
+= v3.1.3 - 2016/11/04 =
+-----------------------
+
++ Added new action hooks to the course syllabus widget/shortcode template
++ Added a small text link on the student dashboard which links to the full courses list of the dashboard
++ Display order revenue for legacy orders instead of 0
++ Make the Order History table on the Student Dashboard responsive
++ Only display _published_ courses on the student dashboard
++ Fixes a conflict with WP Seo Premium's redirect manager which was creating access plan redirects
++ Reenable course review options on the admin panel
++ Updates review output method so reviews are now output via a removeable action
+
+
+= v3.1.2 - 2016/10/31 =
+-----------------------
+
++ Update all course and lesson templates to rely only on `global $post` rather than on `$course` and `$lesson` globals which are working inconsistenly across environments
++ Fix typo related to the line-height of LifterLMS order notes on the admin panel. Thanks [@edent](https://github.com/edent)!
+
+
+= v3.1.1 - 2016/10/28 =
+-----------------------
+
++ Shortcode `[lifterlms_hide_content]` has some new functionality. See [documentaition](https://lifterlms.com/docs/shortcodes/#lifterlms_hide_content) for usage and more information!
++ Fix logic when determining if terms and condition checkboxes should be displayed on checkout & open registration.
++ Define a placeholder on the Terms & Conditions page selection so it can be removed
++ Explicitly declare `LLMS_Lesson` on lesson audio/video embed templates instead of relying the global `$lesson`. Some environments appear to be losing the global.
++ Removed unused lesson template "full-descritpion"
+
+
+= v3.1.0 - 2016/10/27 =
+-----------------------
+
++ New engagement triggers available to allow engagements to be fired when a student enrolls into a course or membership!
++ Add custom email addresses for to, cc, and bcc when sending email engagements
++ New Merge Code button for easy merging of custom merge codes when creating emails
++ Added post table data for LifterLMS Engagements
++ Added new filter `llms_email_engagement_date_format` which allows customization of the format of the `{current_date}` merge code availabe in LifterLMS Emails
++ Added explicit max width declaration to images within LLMS Catalogs to prevent image overflow. Fixes some theme compatibility issues.
++ Optimize course and lesson audio video templates for faster loads
++ Fix course & lesson video to load videos instead of duplicating audio embeds
++ Fix coupon usage query so that coupons cannot be used more than the maximum number of times. Also now displays the correct number of coupons used on the coupons post table.
++ Fix LLMS Engagement Email merge codes to work in subject line
+
+
+= v3.0.4 - 2016/10/20 =
+-----------------------
+
++ Added shortcode `[lifterlms_login]` so the login form can be displayed. Information usage at [https://lifterlms.com/docs/shortcodes/#lifterlms_login](https://lifterlms.com/docs/shortcodes/#lifterlms_login)
++ Added internal function `LLMS_Student->get_name()`
++ Three basic course difficulties will be automatically created on installation and upgrades
++ Updated course difficulty save methods to rely only on the taxonomy rather than the taxonomy and postmeta table
++ Updated admin settings screens to only flush rewrite rules on screens where it is necessary to update rewrites
++ Fix issue with customization of LifterLMS account endpoint URLs
++ Fix a conflict with [Redirection](https://wordpress.org/plugins/redirection/) url monitoring that was causing redirects to be created from Courses and Memberships to the site home page automatically whenever updating the post
++ Fix an undefined index warning on courses / memberships when updating post data
++ Remove confusing and invalid warning message from Membership post screen on admin panel
+
+
+= v3.0.3 - 2016/10/17 =
+-----------------------
+
++ Added filter `llms_show_preview_excerpt` which can be used to hide the excerpt on course syllabus or next/back preview tiles in lesson navigation
++ Fix logic so that only free lessons are marked as free lessons post 3.0 upgrade
++ Fix incorrect display of the "restricted" and "non-restricetd" content areas for memberships
++ Fix undefinded index warning output by membership metaboxes
++ Fix dead like under "Force SSL" checkout setting
++ Course & Membership tiles output by course or membership shortcodes now automatically match column heights like the default catalogs do.
++ Correctly register students as the "Student" Role
++ Database Upgrade script converts users with the role "studnet" to "student"
+
 
 = v3.0.2 - 2016/10/14 =
 -----------------------
@@ -485,8 +702,8 @@ Deprecated options (and related functons where applicaple) for the following cou
 In all scenarions either a `add_filter` (returning false) or a `remove_action()` can be used to replicate the option.
 
 
-= v3.0.0-beta.4 - 2016/09/01 =
--------------------------------
+v3.0.0-beta.4 - 2016/09/01
+------------------------------
 
 + fix issue with course prereq checks
 + next payment due date visible on order admin view
@@ -1292,14 +1509,14 @@ __NOTE: The following enhancements only apply when the WooCommerce Integration i
 + BugFixes: Corrected CSS conflict with Bridge theme settings page
 
 = v1.3.10 - 2015/10/15 =
------------------------
+------------------------
 + Updates: Clarifies some prerequisite text
 + Updates: Quiz questions are now randomized!
 + Updates: Fixes small CSS issue
 + BugFixes: Resolves fatal errors with a small subset of premium themes
 
-= v1.3.9 - 2015/10/5 =
------------------------
+v1.3.9 - 2015/10/5
+------------------
 + BugFixes: Removes conflict with Yoast SEO
 + BugFixes: Fixes CSS issues with box-sizing takeover
 + Feature: New Settings Tile: Session Management. Found at LifterLMS->Settings->General.
@@ -1370,7 +1587,7 @@ __NOTE: The following enhancements only apply when the WooCommerce Integration i
 + Cleans up jQuery console messages
 + Adds in course tracks
 
-= v1.2.8 - 2015-07-17 =
+= v1.2.8 - 2015/07/17 =
 -----------------------
 + Updated Portuguese translation file
 + Fixed issue where quiz score could not be equal to required grade.
@@ -1386,7 +1603,7 @@ __NOTE: The following enhancements only apply when the WooCommerce Integration i
 + New updates to gulp build process
 + Class autoloading and LLMS namespace introduced for more efficient coding.
 
-= v1.2.7 - 2015-06-05 =
+= v1.2.7 - 2015/06/05 =
 -----------------------
 + Minor bug fix with lesson redirect to quiz
 + Minor change to global Course object instantiation.
@@ -1407,19 +1624,19 @@ __NOTE: The following enhancements only apply when the WooCommerce Integration i
 + Woocommerce confict correction to archive templates
 + Style updates to allow themes better control on design
 
-= v1.2.6 - 2015-04-28 =
+= v1.2.6 - 2015/04/28 =
 -----------------------
 + Corrected issue with lesson re-order on save
 + corrected html formatting issue on purchase page
 + corrected html formatting issue on course page
 
-= v1.2.5 - 2015-04-23 =
+= v1.2.5 - 2015/04/23 =
 -----------------------
 + Corrected excerpt to not pull in lesson navigation
 + Modified metabox api for better extension integration
 + Corrected issue with order not displaying all information if coupon was not applied to order
 
-= v1.2.4 - 2015-04-22 =
+= v1.2.4 - 2015/04/22 =
 -----------------------
 + Moved All Course metaboxes to global Course Options Metabox
 + Move Enrolled and Non-Enrolled user wysiwyg post editors to Options Metabox
@@ -1453,7 +1670,7 @@ __NOTE: The following enhancements only apply when the WooCommerce Integration i
 + Added Handler classes for Lessons, Sections, Courses and Posts
 + Refactored Course get / set methods to reduce database queries
 
-= v1.2.3 - 2015-03-12 =
+= v1.2.3 - 2015/03/12 =
 -----------------------
 + Achievement design and functionality updates
 + Achievemnt shortcode added
@@ -1470,7 +1687,7 @@ __NOTE: The following enhancements only apply when the WooCommerce Integration i
 + Membership Bug fix: Membership restriction will now only display on single posts.
 
 
-= v1.2.2 - 2015-02-23 =
+= v1.2.2 - 2015/02/23 =
 -----------------------
 + Corrected drip content bug
 + Added Ajax functionality to quiz
@@ -1485,7 +1702,7 @@ __NOTE: The following enhancements only apply when the WooCommerce Integration i
 + Added functionality to automatically complete quiz when quiz timer reaches 0
 + Moved Quiz functionality methods from front end forms class to Quiz class
 
-= v1.2.1 - 2015-02-19 =
+= v1.2.1 - 2015/02/19 =
 -----------------------
 + Updated settings page theming
 + Added Set up Quick Start Guide
@@ -1494,7 +1711,7 @@ __NOTE: The following enhancements only apply when the WooCommerce Integration i
 + Added Portuguese language support. Thank you Fernando Cassino for the translation :)
 
 
-= v1.2.0 - 2015-02-17 =
+= v1.2.0 - 2015/02/17 =
 -----------------------
 + Admin Course Analytics Dashboard Page. View at LifterLMS->Analytics->Course
 + Admin Sales Analytics Dashboard Page. View at LifterLMS->Analytics->Sales
@@ -1514,11 +1731,11 @@ __NOTE: The following enhancements only apply when the WooCommerce Integration i
 + Better third party payment gateway support. Third party gateway plugins are now easier to develop and integrate.
 + User Registration: Phone Number Registration field option now available in Accounts settings page.
 
-= v1.1.2 - 2014-12-18 =
+= v1.1.2 - 2014/12/18 =
 -----------------------
 + Moved Sidebar registration from plugin install to init
 
-= v1.1.1 - 2014-12-16 =
+= v1.1.1 - 2014/12/16 =
 -----------------------
 + Added user registration settings to require users to agree to Terms and Conditions on user registration
 + Added comments to all classes methods and functions
@@ -1528,7 +1745,7 @@ __NOTE: The following enhancements only apply when the WooCommerce Integration i
 + Fixed bug with endpoint rewrite
 + Added localization POT file and us_EN.po translation file
 
-= v1.1.0 - 2014-12-08 =
+= v1.1.0 - 2014/12/08 =
 -----------------------
 + Updated HTML / CSS on Registration form
 + Added Coupon Creation
@@ -1565,7 +1782,7 @@ __NOTE: The following enhancements only apply when the WooCommerce Integration i
 + Added user statisticc shortcode
 
 
-= v1.0.5 - 2014-11-12 =
+= v1.0.5 - 2014/11/12 =
 -----------------------
 
 + Fixed a mis-placed parenthesis in templates/course/lesson-navigation.php related to outputting excerpt in navigation option
@@ -1582,14 +1799,14 @@ __NOTE: The following enhancements only apply when the WooCommerce Integration i
 + Updated template overriding to check child & parent themes
 + Updated template overriding to apply filters to directories to check for overrides to allow themes and plugins to add their own directories
 
-= v1.0.4 - 2014-11-04 =
+= v1.0.4 - 2014/11/04 =
 -----------------------
 
 + Templating bug fix
 + Added shortcode and autop support to course and lesson content / excerpt
 
 
-= v1.0.3 - 2014-11-04 =
+= v1.0.3 - 2014/11/04 =
 -----------------------
 
 + Major Templating Update!
@@ -1597,23 +1814,24 @@ __NOTE: The following enhancements only apply when the WooCommerce Integration i
 + Course and Section content templates now filter through WP content
 
 
-= v1.0.2 - 2014-10-31 =
--------------------------
+= v1.0.2 - 2014/10/31 =
+-----------------------
 
 + Added lesson short description to previous lesson preview links -- it was rendering on "Next" but not "Previous"
 + Added a class to course shop links wrapper to signify the course has been completed
 + Removed an uncessary CSS rule related to the progress bar
 
 
-= v1.0.2 - 2014-10-30 =
+= v1.0.2 - 2014/10/30 =
 -----------------------
 
 + Fixed SSL certificate issues when retreiving data from https://lifterlms.com
 + Added rocket settings icon back into repo
 
 
-= v1.0.1 - 2014-10-30 =
+= v1.0.1 - 2014/10/30 =
 -----------------------
 
 + Updated activation endpoint url to point towards live server rather than dev
+
 

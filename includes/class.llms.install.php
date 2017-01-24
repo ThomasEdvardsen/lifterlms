@@ -18,6 +18,8 @@ class LLMS_Install {
 	 */
 	private static $db_updates = array(
 		'3.0.0' => 'updates/lifterlms-update-3.0.0.php',
+		'3.0.3' => 'updates/lifterlms-update-3.0.3.php',
+		'3.3.0' => 'updates/lifterlms-update-3.3.0.php',
 	);
 
 	/**
@@ -64,6 +66,33 @@ class LLMS_Install {
 
 		if ( ! wp_next_scheduled( 'llms_send_tracking_data' )) {
 			wp_schedule_event( time(), apply_filters( 'llms_tracker_schedule_interval', 'daily' ), 'llms_send_tracking_data' );
+		}
+
+	}
+
+	/**
+	 * Create basic course difficulties on installation
+	 * @return   void
+	 * @since    3.0.4
+	 * @version  3.0.4
+	 */
+	public static function create_difficulties() {
+
+		$difficulties = apply_filters( 'llms_install_create_difficulties', array(
+			_x( 'Beginner', 'course difficulty name', 'lifterlms' ),
+			_x( 'Intermediate', 'course difficulty name', 'lifterlms' ),
+			_x( 'Advanced', 'course difficulty name', 'lifterlms' ),
+		) );
+
+		foreach ( $difficulties as $name ) {
+
+			// only create if it doesn't already exist
+			if ( ! get_term_by( 'name', $name, 'course_difficulty' ) ) {
+
+				$id = wp_insert_term( $name, 'course_difficulty' );
+
+			}
+
 		}
 
 	}
@@ -348,7 +377,7 @@ CREATE TABLE `{$wpdb->prefix}lifterlms_vouchers_codes` (
 	 * Core install function
 	 * @return  void
 	 * @since   1.0.0
-	 * @version 3.0.0
+	 * @version 3.0.4 - added difficulty creation
 	 */
 	public static function install() {
 
@@ -359,13 +388,15 @@ CREATE TABLE `{$wpdb->prefix}lifterlms_vouchers_codes` (
 		self::create_tables();
 		self::create_roles();
 
-		include_once 'class.llms.post-types.php';
+		LLMS_Post_Types::register_post_types();
+		LLMS_Post_Types::register_taxonomies();
 
 		LLMS()->query->init_query_vars();
 		LLMS()->query->add_endpoints();
 
 		self::create_cron_jobs();
 		self::create_files();
+		self::create_difficulties();
 
 		$version = get_option( 'lifterlms_current_version', null );
 		$db_version = get_option( 'lifterlms_db_version', null );

@@ -1,23 +1,26 @@
 <?php
 
 /**
-* Checkout Shortcode
-*
-* Sets functionality associated with shortcode [llms_checkout]
-*
-* @author codeBOX
-* @project lifterLMS
-*/
+ * Checkout Shortcode
+ *
+ * Sets functionality associated with shortcode [llms_checkout]
+ *
+ * @author codeBOX
+ * @project lifterLMS
+ */
+
+if ( ! defined( 'ABSPATH' ) ) { exit; }
+
 class LLMS_Shortcode_Checkout {
 
 	public static $uid;
 
 	/**
-	* Get shortcode content
-	*
-	* @param array $atts
-	* @return array $messages
-	*/
+	 * Get shortcode content
+	 *
+	 * @param array $atts
+	 * @return array $messages
+	 */
 	public static function get( $atts ) {
 
 		return LLMS_Shortcodes::shortcode_wrapper( array( __CLASS__, 'output' ), $atts );
@@ -25,11 +28,11 @@ class LLMS_Shortcode_Checkout {
 	}
 
 	/**
-	* Determines what content to output to user absed on status
-	*
-	* @param array $atts
-	* @return array $messages
-	*/
+	 * Determines what content to output to user absed on status
+	 *
+	 * @param array $atts
+	 * @return array $messages
+	 */
 	public static function output( $atts ) {
 
 		global $wp;
@@ -64,26 +67,35 @@ class LLMS_Shortcode_Checkout {
 		// purchase step 1
 		if ( isset( $_GET['plan'] ) && is_numeric( $_GET['plan'] ) ) {
 
-			$coupon = LLMS()->session->get( 'llms_coupon' );
-			if ( isset( $coupon['coupon_id'] ) && isset( $coupon['plan_id'] ) ) {
-				if ( $coupon['plan_id'] == $_GET['plan'] ) {
-					$atts['coupon'] = new LLMS_Coupon( $coupon['coupon_id'] );
+			// Only retrieve if plan is a llms_access_plan and is published
+			if ( 0 === strcmp( get_post_status( $_GET['plan'] ), 'publish' ) && 0 === strcmp( get_post_type( $_GET['plan'] ), 'llms_access_plan' ) ) {
+
+				$coupon = LLMS()->session->get( 'llms_coupon' );
+
+				if (isset( $coupon['coupon_id'] ) && isset( $coupon['plan_id'] )) {
+					if ($coupon['plan_id'] == $_GET['plan']) {
+						$atts['coupon'] = new LLMS_Coupon( $coupon['coupon_id'] );
+					} else {
+						LLMS()->session->set( 'llms_coupon', false );
+						$atts['coupon'] = false;
+					}
 				} else {
-					LLMS()->session->set( 'llms_coupon', false );
 					$atts['coupon'] = false;
 				}
+
+				if (isset( $_POST['llms_order_key'] )) {
+					$atts['order_key'] = sanitize_text_field( $_POST['llms_order_key'] );
+				}
+
+				$atts['plan'] = new LLMS_Access_Plan( $_GET['plan'] );
+				$atts['product'] = $atts['plan']->get_product();
+
+				self::checkout( $atts );
 			} else {
-				$atts['coupon'] = false;
+
+				self::error( __( 'Invalid access plan.', 'lifterlms' ) );
+
 			}
-
-			if ( isset( $_POST['llms_order_key'] ) ) {
-				$atts['order_key'] = sanitize_text_field( $_POST['llms_order_key'] );
-			}
-
-			$atts['plan'] = new LLMS_Access_Plan( $_GET['plan'] );
-			$atts['product'] = $atts['plan']->get_product();
-
-			self::checkout( $atts );
 
 		} // purchase confirmation where applicable
 		elseif ( isset( $wp->query_vars['confirm-payment'] ) ) {
@@ -125,11 +137,11 @@ class LLMS_Shortcode_Checkout {
 
 
 	/**
-	* My Checkout page template
-	*
-	* @param array $atts
-	* @return void
-	*/
+	 * My Checkout page template
+	 *
+	 * @param array $atts
+	 * @return void
+	 */
 	private static function checkout( $atts ) {
 
 		// if theres membership restrictions, check the user is in at least one membership
@@ -152,7 +164,7 @@ class LLMS_Shortcode_Checkout {
 
 		if ( self::$uid ) {
 			$user = get_userdata( self::$uid );
-			llms_print_notice( sprintf( __( 'You are currently logged in as <em>%s</em>. <a href="%s">Click here to logout</a>' ), $user->user_email, wp_logout_url( $atts['plan']->get_checkout_url() ) ), 'notice' );
+			llms_print_notice( sprintf( __( 'You are currently logged in as <em>%1$s</em>. <a href="%2$s">Click here to logout</a>', 'lifterlms' ), $user->user_email, wp_logout_url( $atts['plan']->get_checkout_url() ) ), 'notice' );
 		} else {
 			llms_get_login_form( sprintf( __( 'Already have an account? <a href="%s">Click here to login</a>', 'lifterlms' ), '#llms-show-login' ), $atts['plan']->get_checkout_url() );
 		}
@@ -162,10 +174,10 @@ class LLMS_Shortcode_Checkout {
 	}
 
 	/**
-	* Edit Checkout template
-	*
-	* @return void
-	*/
+	 * Edit Checkout template
+	 *
+	 * @return void
+	 */
 	private static function confirm_payment( $atts ) {
 		llms_get_template( 'checkout/form-confirm-payment.php', $atts );
 	}

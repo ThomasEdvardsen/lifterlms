@@ -301,7 +301,7 @@ class LLMS_Order extends LLMS_Post_Model {
 	protected function get_creation_args( $title = '' ) {
 
 		if ( empty( $title ) ) {
-			$title = sprintf( __( 'Order &ndash; %s', 'lifterlms' ), strftime( _x( '%b %d, %Y @ %I:%M %p', 'Order date parsed by strftime', 'lifterlms' ), current_time( 'timestamp' ) ) );
+			$title = sprintf( __( 'Order &ndash; %s', 'lifterlms' ), strftime( _x( '%1$b %2$d, %Y @ %I:%M %p', 'Order date parsed by strftime', 'lifterlms' ), current_time( 'timestamp' ) ) );
 		}
 
 		return apply_filters( 'llms_' . $this->model_post_type . '_get_creation_args', array(
@@ -497,7 +497,7 @@ class LLMS_Order extends LLMS_Post_Model {
 	 * @param    string     $format  date format to return the date in (see php date())
 	 * @return   string
 	 * @since    3.0.0
-	 * @version  3.0.0
+	 * @version  3.2.5
 	 */
 	public function get_next_payment_due_date( $format = 'Y-m-d H:i:s' ) {
 
@@ -514,7 +514,6 @@ class LLMS_Order extends LLMS_Post_Model {
 		// return false b/c no more payments are due
 		$num_payments = $this->get( 'billing_length' );
 		if ( $num_payments ) {
-
 			$txns = $this->get_transactions( array(
 				'per_page' => -1,
 				'status' => 'llms-txn-succeeded',
@@ -525,22 +524,22 @@ class LLMS_Order extends LLMS_Post_Model {
 			if ( $txns['count'] >= $num_payments ) {
 				return new WP_Error( 'completed', __( 'All recurring transactions completed', 'lifterlms' ) );
 			}
-
 		}
 
-		// get the date of the last successful txn
-		$last_date = strtotime( $this->get_last_transaction_date( 'llms-txn-succeeded', 'recurring' ) );
-
-		// if there's no transaction, use now for calculation
-		if ( ! $last_date ) {
-			$last_date = current_time( 'timestamp' );
-		}
-
+		// if were on a trial and the trial hasn't ended yet next payment date is the date the trial ends
 		if ( $this->has_trial() && ! $this->has_trial_ended() ) {
 
 			$next = $this->get_trial_end_date( 'U' );
 
 		} else {
+
+			// get the date of the last successful txn
+			$last_date = strtotime( $this->get_last_transaction_date( 'llms-txn-succeeded', 'recurring' ) );
+
+			// if there's no transaction, use now for calculation
+			if ( ! $last_date ) {
+				$last_date = current_time( 'timestamp' );
+			}
 
 			$period = $this->get( 'billing_period' );
 			$frequency = $this->get( 'billing_frequency' );
@@ -748,25 +747,41 @@ class LLMS_Order extends LLMS_Post_Model {
 			$end = strtotime( '+' . $length . ' ' . $period, $start );
 
 			$r = date_i18n( $format, $end );
+
 		}
 
 		return apply_filters( 'llms_order_get_trial_end_date', $r, $this );
 
 	}
 
-	public function get_revenue( $type = 'net', $deduct = null ) {
+	/**
+	 * Gets the total revenue of an order
+	 * @param    string     $type    revenue type [grosse|net]
+	 * @return   float
+	 * @since    3.0.0
+	 * @version  3.1.3 - handle legacy orders
+	 */
+	public function get_revenue( $type = 'net' ) {
 
-		$grosse = $this->get_transaction_total( 'amount' );
+		if ( $this->is_legacy() ) {
 
-		if ( 'net' === $type ) {
+			$amount = $this->get( 'total' );
 
-			$refunds = $this->get_transaction_total( 'refund_amount' );
+		} else {
 
-			$grosse = $grosse - $refunds;
+			$amount = $this->get_transaction_total( 'amount' );
+
+			if ( 'net' === $type ) {
+
+				$refunds = $this->get_transaction_total( 'refund_amount' );
+
+				$amount = $amount - $refunds;
+
+			}
 
 		}
 
-		return $grosse;
+		return apply_filters( 'llms_order_get_revenue' , $amount, $type, $this );
 
 	}
 
@@ -889,7 +904,7 @@ class LLMS_Order extends LLMS_Post_Model {
 	 * Will always unschedule the scheduled action (if one exists) before scheduling anothes
 	 * @return   void
 	 * @since    3.0.0
-	 * @version  3.0.0
+	 * @version  3.1.7
 	 */
 	public function maybe_schedule_payment() {
 
@@ -903,6 +918,9 @@ class LLMS_Order extends LLMS_Post_Model {
 
 			// unschedule the next action (does nothing if no action scheduled)
 			$this->unschedule_recurring_payment();
+
+			// convert our date to UTC before passing to the scheduler
+			$date = $date - ( HOUR_IN_SECONDS * get_option( 'gmt_offset' ) );
 
 			// schedule the payment
 			wc_schedule_single_action( $date, 'llms_charge_recurring_payment', array( 'order_id' => $this->get( 'id' ) ) );

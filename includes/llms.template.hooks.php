@@ -36,6 +36,7 @@ add_action( 'lifterlms_single_course_after_summary', 'lifterlms_template_single_
 add_action( 'lifterlms_single_course_after_summary', 'lifterlms_template_pricing_table',             60 );
 add_action( 'lifterlms_single_course_after_summary', 'lifterlms_template_single_course_progress',    60 );
 add_action( 'lifterlms_single_course_after_summary', 'lifterlms_template_single_syllabus',           90 );
+add_action( 'lifterlms_single_course_after_summary', 'lifterlms_template_single_reviews',            100 );
 
 
 
@@ -72,6 +73,7 @@ add_action( 'lifterlms_after_loop', 'lifterlms_loop_end', 10 );
  * Course & Membership Loop Items
  *
  ***********************************************************************/
+add_action( 'lifterlms_before_loop_item', 'lifterlms_loop_featured_video', 8 );
 add_action( 'lifterlms_before_loop_item', 'lifterlms_loop_link_start', 10 );
 
 add_action( 'lifterlms_before_loop_item_title', 'lifterlms_template_loop_thumbnail', 10 );

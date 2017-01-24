@@ -17,6 +17,14 @@ class LLMS_Person_Handler {
 	private static $meta_prefix = 'llms_';
 
 	/**
+	 * Prevents the hacky voucher script from being output multiple times
+	 * @var      boolean
+	 * @since    3.0.2
+	 * @version  3.0.2
+	 */
+	private static $voucher_script_output = false;
+
+	/**
 	 * Generate a unique login based on the user's email address
 	 * @param  string $email user's email address
 	 * @return string
@@ -47,39 +55,45 @@ class LLMS_Person_Handler {
 
 	}
 
-
-	public static function get_login_fields() {
+	/**
+	 * Get the fields for the login form
+	 * @param    string     $layout  form layout [columns|stacked]
+	 * @return   array
+	 * @since    3.0.0
+	 * @version  3.0.4
+	 */
+	public static function get_login_fields( $layout = 'columns' ) {
 
 		$gen_usernames = ( 'yes' === get_option( 'lifterlms_registration_generate_username' ) );
 
 		return apply_filters( 'lifterlms_person_login_fields', array(
 			array(
-				'columns' => 6,
+				'columns' => ( 'columns' == $layout ) ? 6 : 12,
 				'id' => 'llms_login',
 				'label' => $gen_usernames ? __( 'Email Address', 'lifterlms' ) : __( 'Username or Email Address', 'lifterlms' ),
-				'last_column' => false,
+				'last_column' => ( 'columns' == $layout ) ? false : true,
 				'required' => true,
 				'type'  => $gen_usernames ? 'email' : 'text',
 			),
 			array(
-				'columns' => 6,
+				'columns' => ( 'columns' == $layout ) ? 6 : 12,
 				'id' => 'llms_password',
 				'label' => __( 'Password', 'lifterlms' ),
-				'last_column' => true,
+				'last_column' => ( 'columns' == $layout ) ? true : true,
 				'required' => true,
 				'type'  => 'password',
 			),
 			array(
-				'columns' => 3,
+				'columns' => ( 'columns' == $layout ) ? 3 : 12,
 				'classes' => 'llms-button-action',
 				'id' => 'llms_login_button',
 				'value' => __( 'Login', 'lifterlms' ),
-				'last_column' => false,
+				'last_column' => ( 'columns' == $layout ) ? false : true,
 				'required' => false,
 				'type'  => 'submit',
 			),
 			array(
-				'columns' => 6,
+				'columns' => ( 'columns' == $layout ) ? 6 : 6,
 				'id' => 'llms_remember',
 				'label' => __( 'Remember me', 'lifterlms' ),
 				'last_column' => false,
@@ -87,7 +101,7 @@ class LLMS_Person_Handler {
 				'type'  => 'checkbox',
 			),
 			array(
-				'columns' => 3,
+				'columns' => ( 'columns' == $layout ) ? 3 : 6,
 				'id' => 'llms_lost_password',
 				'last_column' => true,
 				'description' => '<a href="' . esc_url( llms_lostpassword_url() ) . '">' . __( 'Lost your password?', 'lifterlms' ) . '</a>',
@@ -366,7 +380,7 @@ class LLMS_Person_Handler {
 
 		if ( 'registration' === $action ) {
 			$insert_data = array(
-				'role' => 'studnet',
+				'role' => 'student',
 				'show_admin_bar_front' => false,
 				'user_email' => $data['email_address'],
 				'user_login' => $data['user_login'],
@@ -557,7 +571,7 @@ class LLMS_Person_Handler {
 		}
 
 		// validate the fields & allow custom validation to occur
-		$valid = self::validate_fields( apply_filters( 'lifterlms_user_registration_data', $data, $screen ), $screen );
+		$valid = apply_filters( 'lifterlms_user_registration_data', self::validate_fields( $data, $screen ), $data, $screen );
 
 		// if errors found, return them
 		if ( is_wp_error( $valid ) ) {
@@ -639,7 +653,7 @@ class LLMS_Person_Handler {
 		}
 
 		// validate the fields & allow custom validation to occur
-		$valid = self::validate_fields( apply_filters( 'lifterlms_user_update_data', $data, $screen ), $screen );
+		$valid = apply_filters( 'lifterlms_user_update_data', self::validate_fields( $data, $screen ), $data, $screen );
 
 		// if errors found, return them
 		if ( is_wp_error( $valid ) ) {
@@ -774,7 +788,7 @@ class LLMS_Person_Handler {
 					case 'select':
 					case 'radio':
 						if ( ! in_array( $val, array_keys( $field['options'] ) ) ) {
-							$e->add( $field['id'], sprintf( __( '"%s" is an invalid option for %s', 'lifterlms' ), $val, $label ), 'invalid' );
+							$e->add( $field['id'], sprintf( __( '"%1$s" is an invalid option for %2$s', 'lifterlms' ), $val, $label ), 'invalid' );
 						}
 					break;
 
@@ -786,7 +800,7 @@ class LLMS_Person_Handler {
 					// make sure the value is numeric
 					case 'number':
 						if ( ! is_numeric( $val ) ) {
-							$e->add( $field['id'], sprintf( __( '%s is a required field', 'lifterlms' ), $label ), 'invalid' );
+							$e->add( $field['id'], sprintf( __( '%s must be numeric', 'lifterlms' ), $label ), 'invalid' );
 							continue 2;
 						}
 					break;
@@ -816,7 +830,7 @@ class LLMS_Person_Handler {
 
 				if ( ! $match || $val !== $match ) {
 
-					$e->add( $field['id'], sprintf( __( '%s must match %s', 'lifterlms' ), $matched_values[ $field['id'] ], $label ), 'match' );
+					$e->add( $field['id'], sprintf( __( '%1$s must match %2$s', 'lifterlms' ), $matched_values[ $field['id'] ], $label ), 'match' );
 
 				}
 
@@ -843,14 +857,21 @@ class LLMS_Person_Handler {
 	 * @version  3.0.0
 	 */
 	public static function voucher_toggle_script() {
-		echo "<script type=\"text/javascript\">
-		( function( $ ) {
-			$( '#llms-voucher-toggle' ).on( 'click', function( e ) {
-				e.preventDefault();
-				$( '#llms_voucher' ).toggle();
-			} );
-		} )( jQuery );
-		</script>";
+
+		if ( empty( self::$voucher_script_output ) ) {
+
+			self::$voucher_script_output = true;
+
+			echo "<script type=\"text/javascript\">
+			( function( $ ) {
+				$( '#llms-voucher-toggle' ).on( 'click', function( e ) {
+					e.preventDefault();
+					$( '#llms_voucher' ).toggle();
+				} );
+			} )( jQuery );
+			</script>";
+
+		}
 
 	}
 

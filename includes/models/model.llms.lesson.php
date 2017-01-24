@@ -3,7 +3,7 @@
  * LifterLMS Lesson Model
  *
  * @since    1.0.0
- * @version  3.0.0
+ * @version  3.3.0
  *
  * @property  $assigned_quiz  (int)  WP Post ID of the llms_quiz
  * @property  $audio_embed  (string)  Audio embed URL
@@ -14,6 +14,8 @@
  * @property  $has_prerequisite  (yesno)  Yes if the lesson has a prereq lesson
  * @property  $order (int)  Lesson's order within its parent section
  * @property  $prerequisite  (int)  WP Post ID of the prerequisite lesson, only if $has_prequisite is 'yes'
+ * @property  $parent_course (int)  WP Post ID of the course the lesson belongs to
+ * @property  $parent_section (int)  WP Post ID of the section the lesson belongs to
  * @property  $require_passing_grade  (yesno)  Whether of not students have to pass the quiz to advance to the next lesson
  * @property  $time_available  (string)  Optional time to make lesson available on $date_available when $drip_method is "date"
  * @property  $video_embed  (string)  Video embed URL
@@ -22,6 +24,23 @@
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class LLMS_Lesson extends LLMS_Post_Model {
+
+	protected $properties = array(
+		'assigned_quiz' => 'absint',
+		'audio_embed' => 'text',
+		'date_available' => 'text',
+		'days_before_available' => 'absint',
+		'drip_method' => 'text',
+		'free_lesson' => 'yesno',
+		'has_prerequisite' => 'yesno',
+		'order' => 'absint',
+		'parent_course' => 'absint',
+		'parent_section' => 'absint',
+		'prerequisite' => 'absint',
+		'require_passing_grade' => 'yesno',
+		'time_available' => 'text',
+		'video_embed' => 'text',
+	);
 
 	protected $db_post_type = 'lesson';
 	protected $model_post_type = 'lesson';
@@ -139,7 +158,7 @@ class LLMS_Lesson extends LLMS_Post_Model {
 	 * @todo  refactor to use new api after a migration is written
 	 */
 	public function get_parent_course() {
-		return absint( get_post_meta( $this->get( 'id' ), '_parent_course', true ) );
+		return absint( get_post_meta( $this->get( 'id' ), '_llms_parent_course', true ) );
 	}
 
 	/**
@@ -150,7 +169,7 @@ class LLMS_Lesson extends LLMS_Post_Model {
 	 * @todo  refactor to use new api after a migration is written
 	 */
 	public function get_parent_section() {
-		return  absint( get_post_meta( $this->get( 'id' ), '_parent_section', true ) );
+		return  absint( get_post_meta( $this->get( 'id' ), '_llms_parent_section', true ) );
 	}
 
 	/**
@@ -205,31 +224,16 @@ class LLMS_Lesson extends LLMS_Post_Model {
 	}
 
 	/**
-	 * Get a property's data type for scrubbing
-	 * used by $this->scrub() to determine how to scrub the property
-	 * @param   string $key  property key
-	 * @return  string
-	 * @since   3.0.0
-	 * @version 3.0.0
+	 * Retrieve an object for the assignd quiz (if a quiz is assigned )
+	 * @return   obj|false
+	 * @since    3.3.0
+	 * @version  3.3.0
 	 */
-	protected function get_property_type( $key ) {
-
-		switch ( $key ) {
-
-			case 'prerequisite':
-			case 'days_before_available':
-			case 'parent_course':
-				$type = 'absint';
-			break;
-
-			case 'has_prerequisite':
-			default:
-				$type = 'text';
-
+	public function get_quiz() {
+		if ( $this->has_quiz() ) {
+			return new LLMS_QQuiz( $this->get( 'assigned_quiz' ) );
 		}
-
-		return $type;
-
+		return false;
 	}
 
 	/**
@@ -238,7 +242,7 @@ class LLMS_Lesson extends LLMS_Post_Model {
 	 *
 	 * @return string
 	 * @since   1.0.0
-	 * @version 3.0.0 -- added fallback to video shortcode when oEmbed fails
+	 * @version 3.1.0
 	 */
 	public function get_video() {
 
@@ -252,7 +256,7 @@ class LLMS_Lesson extends LLMS_Post_Model {
 
 			if ( ! $r ) {
 
-				$r = do_shortcode( '[video src="' . $this->get( 'audio_embed' ) . '"]' );
+				$r = do_shortcode( '[video src="' . $this->get( 'video_embed' ) . '"]' );
 
 			}
 
@@ -272,6 +276,16 @@ class LLMS_Lesson extends LLMS_Post_Model {
 
 		return ( 'yes' == $this->get( 'has_prerequisite' ) && $this->get( 'prerequisite' ) );
 
+	}
+
+	/**
+	 * Determine if a quiz is assigned to this lesson
+	 * @return   boolean
+	 * @since    3.3.0
+	 * @version  3.3.0
+	 */
+	public function has_quiz() {
+		return ( $this->get( 'assigned_quiz' ) );
 	}
 
 	/**
@@ -329,10 +343,29 @@ class LLMS_Lesson extends LLMS_Post_Model {
 	 * @version  3.0.0
 	 */
 	public function is_free() {
-		return $this->get( 'free_lesson' ) ? true : false;
+		return ( 'yes' === $this->get( 'free_lesson' ) );
 	}
 
+	/**
+	 * Add data to the course model when converted to array
+	 * Called before data is sorted and retuned by $this->jsonSerialize()
+	 * @param    array     $arr   data to be serialized
+	 * @return   array
+	 * @since    3.3.0
+	 * @version  3.3.0
+	 */
+	public function toArrayAfter( $arr ) {
 
+		if ( $this->has_quiz() ) {
+
+			$q = $this->get_quiz();
+			$arr['assigned_quiz'] = $q->toArray();
+
+		}
+
+		return $arr;
+
+	}
 
 
 
@@ -428,7 +461,7 @@ class LLMS_Lesson extends LLMS_Post_Model {
 	 */
 	public function set_parent_section( $section_id ) {
 
-		return update_post_meta( $this->id, '_parent_section', $section_id );
+		return update_post_meta( $this->id, '_llms_parent_section', $section_id );
 
 	}
 
@@ -454,7 +487,7 @@ class LLMS_Lesson extends LLMS_Post_Model {
 	 */
 	public function set_parent_course( $course_id ) {
 
-		return update_post_meta( $this->id, '_parent_course', $course_id );
+		return update_post_meta( $this->id, '_llms_parent_course', $course_id );
 
 	}
 
@@ -521,7 +554,7 @@ class LLMS_Lesson extends LLMS_Post_Model {
 			'meta_query' 		=> array(
 				'relation' => 'AND',
 				array(
-				    'key' => '_parent_section',
+				    'key' => '_llms_parent_section',
 				    'value' => $parent_section,
 				    'compare' => '=',
 			    ),
@@ -553,7 +586,7 @@ class LLMS_Lesson extends LLMS_Post_Model {
 				'meta_query' 		=> array(
 					'relation' => 'AND',
 					array(
-					    'key' => '_parent_course',
+					    'key' => '_llms_parent_course',
 					    'value' => $parent_course,
 					    'compare' => '=',
 				    ),
@@ -601,7 +634,7 @@ class LLMS_Lesson extends LLMS_Post_Model {
 				'meta_query' 		=> array(
 					'relation' => 'AND',
 					array(
-					    'key' => '_parent_section',
+					    'key' => '_llms_parent_section',
 					    'value' => $parent_section,
 					    'compare' => '=',
 				    ),
@@ -637,7 +670,7 @@ class LLMS_Lesson extends LLMS_Post_Model {
 					'meta_query' 		=> array(
 						'relation' => 'AND',
 						array(
-						    'key' => '_parent_course',
+						    'key' => '_llms_parent_course',
 						    'value' => $parent_course,
 						    'compare' => '=',
 					    ),
@@ -685,6 +718,10 @@ class LLMS_Lesson extends LLMS_Post_Model {
 		$user = new LLMS_Person;
 		$user_postmetas = $user->get_user_postmeta_data( $user_id, $this->id );
 
+		// clear the cached progress, it'll be regenerated next time it's called
+		$student = new LLMS_Student( $user_id );
+		$student->set( 'overall_progress', '', true );
+
 		if ( empty( $user_id ) ) {
 			throw new Exception( '<strong>' . __( 'Error', 'lifterlms' ) . ':</strong> ' . __( 'User cannot be found.', 'lifterlms' ) );
 		} elseif ( ! empty( $user_postmetas ) ) {
@@ -693,11 +730,10 @@ class LLMS_Lesson extends LLMS_Post_Model {
 				return;
 			}
 		} else {
-
 			$key = '_is_complete';
 			$value = 'yes';
 
-			$update_user_postmeta = $wpdb->insert( $wpdb->prefix .'lifterlms_user_postmeta',
+			$update_user_postmeta = $wpdb->insert( $wpdb->prefix . 'lifterlms_user_postmeta',
 				array(
 					'user_id' 			=> $user_id,
 					'post_id' 			=> $this->id,
@@ -726,7 +762,7 @@ class LLMS_Lesson extends LLMS_Post_Model {
 	    			}
 	    		}
 
-				$update_user_postmeta = $wpdb->insert( $wpdb->prefix .'lifterlms_user_postmeta',
+				$update_user_postmeta = $wpdb->insert( $wpdb->prefix . 'lifterlms_user_postmeta',
 					array(
 						'user_id' 			=> $user_id,
 						'post_id' 			=> $section->id,
@@ -753,7 +789,7 @@ class LLMS_Lesson extends LLMS_Post_Model {
 	    			}
 	    		}
 
-				$update_user_postmeta = $wpdb->insert( $wpdb->prefix .'lifterlms_user_postmeta',
+				$update_user_postmeta = $wpdb->insert( $wpdb->prefix . 'lifterlms_user_postmeta',
 					array(
 						'user_id' 			=> $user_id,
 						'post_id' 			=> $course->id,
